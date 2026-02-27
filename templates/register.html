@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Create Account | App Analysis{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-4 d-none d-lg-flex flex-column justify-content-center bg-dark text-white p-5 rounded-left shadow-lg">
+            <h2 class="font-weight-bold mb-4">Join the Shield.</h2>
+            <ul class="list-unstyled">
+                <li class="mb-4">
+                    <i class="fas fa-check-circle text-warning mr-2"></i>
+                    <strong>Verify News:</strong> Access our LR and SVM models.
+                </li>
+                <li class="mb-4">
+                    <i class="fas fa-check-circle text-warning mr-2"></i>
+                    <strong>Track History:</strong> Save and export your analysis reports.
+                </li>
+                <li class="mb-4">
+                    <i class="fas fa-check-circle text-warning mr-2"></i>
+                    <strong>AI Insights:</strong> Get detailed confidence scores for every article.
+                </li>
+            </ul>
+            <div class="mt-4 border-top border-secondary pt-4">
+                <small class="opacity-50 italic">"Securing the truth, one headline at a time."</small>
+            </div>
+        </div>
+
+        <div class="col-lg-5 col-md-8 px-0">
+            <div class="card border-0 shadow-lg p-4 rounded-right" style="min-height: 550px;">
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="bg-light d-inline-block p-3 rounded-circle mb-3">
+                            <i class="fas fa-user-shield fa-2x text-primary"></i>
+                        </div>
+                        <h3 class="font-weight-bold">Create Account</h3>
+                        <p class="text-muted small">Start verifying digital content with AI</p>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" class="registration-form">
+                        {% csrf_token %}
+                        
+                        {# Custom rendering for Django form fields to apply Bootstrap classes #}
+                        {% for field in form %}
+                            <div class="form-group mb-3">
+                                <label class="small font-weight-bold text-dark" for="{{ field.id_for_label }}">
+                                    {{ field.label }}
+                                </label>
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <small class="form-text text-muted" style="font-size: 0.75rem;">{{ field.help_text }}</small>
+                                {% endif %}
+                                {% for error in field.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary btn-block btn-lg shadow-sm font-weight-bold">
+                                <i class="fas fa-user-plus mr-2"></i>Create My Account
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="mt-4 text-center">
+                        <p class="text-muted small">
+                            Already a member? 
+                            <a href="{% url 'login' %}" class="text-primary font-weight-bold ml-1">
+                                <i class="fas fa-sign-in-alt mr-1"></i>Sign In
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Ensure Django form inputs look like Bootstrap inputs */
+    .registration-form input, 
+    .registration-form select, 
+    .registration-form textarea {
+        display: block;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        color: #495057;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .registration-form input:focus {
+        background-color: #fff;
+        border-color: #2563eb;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.1);
+    }
+
+    /* Fixed height for side branding on desktop */
+    .rounded-left { border-radius: 1rem 0 0 1rem !important; }
+    .rounded-right { border-radius: 0 1rem 1rem 0 !important; }
+
+    @media (max-width: 991px) {
+        .rounded-right { border-radius: 1rem !important; }
+    }
+
+    .opacity-50 { opacity: 0.5; }
+    .italic { font-style: italic; }
+</style>
+{% endblock %}

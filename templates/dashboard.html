@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – PlanIt AI{% endblock %}
+
+{% block content %}
+<style>
+    .stats-card {
+        border: none;
+        border-radius: 15px;
+        transition: transform 0.3s ease;
+        background: white;
+    }
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .icon-shape {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+    .ai-section-title {
+        font-family: 'Ubuntu', sans-serif;
+        font-size: 1.25rem;
+        color: var(--primary-color);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 1.5rem;
+    }
+    .list-group-item {
+        border: none;
+        margin-bottom: 8px;
+        border-radius: 10px !important;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .chart-container {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .reminders-container .alert {
+    transition: all 0.2s ease;
+}
+
+.reminders-container .alert:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.reminders-container .alert-success {
+    border-left-color: #198754 !important;
+}
+
+.reminders-container .alert-info {
+    border-left-color: #0d6efd !important;
+}
+</style>
+
+<div class="container my-4 my-md-5">
+    <div class="row align-items-center mb-5">
+        <div class="col-md-8">
+            <h1 class="display-5 font-weight-bold mb-1" style="color: var(--primary-color);">
+                {{ greeting }}, {{ request.session.username }}!
+            </h1>
+            <p class="text-muted">
+                <i class="fas fa-magic text-info mr-1"></i> PlanIt AI has analyzed your schedule for today.
+            </p>
+        </div>
+        <div class="col-md-4 text-md-right mt-3 mt-md-0">
+            <a href="{% url 'create_task' %}" class="btn btn-info btn-lg px-4 shadow-sm" style="border-radius: 30px;">
+                <i class="fas fa-plus-circle mr-2"></i>New Task
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card stats-card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="icon-shape bg-light text-primary"><i class="fas fa-tasks"></i></div>
+                    <h6 class="text-muted text-uppercase small font-weight-bold">Total Tasks</h6>
+                    <h2 class="mb-0">{{ total_tasks }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card stats-card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="icon-shape bg-light text-warning"><i class="fas fa-clock"></i></div>
+                    <h6 class="text-muted text-uppercase small font-weight-bold">Pending</h6>
+                    <h2 class="mb-0">{{ pending_tasks }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card stats-card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="icon-shape bg-light text-success"><i class="fas fa-check-double"></i></div>
+                    <h6 class="text-muted text-uppercase small font-weight-bold">Completed</h6>
+                    <h2 class="mb-0">{{ completed_tasks }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+            <div class="card stats-card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="icon-shape bg-light text-danger"><i class="fas fa-exclamation-triangle"></i></div>
+                    <h6 class="text-muted text-uppercase small font-weight-bold">Overdue</h6>
+                    <h2 class="mb-0">{{ overdue_tasks }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-lg-6 mb-4">
+            <div class="chart-container h-100">
+                <h5 class="mb-4 font-weight-bold">Task Distribution</h5>
+                {{ category_chart|safe }}
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="chart-container h-100">
+                <h5 class="mb-4 font-weight-bold">Completion Rate</h5>
+                {{ completion_chart|safe }}
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="chart-container">
+                <h5 class="mb-4 font-weight-bold">Weekly Productivity Trend</h5>
+                {{ weekly_chart|safe }}
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+<div class="col-lg-4 mb-4">
+    <h4 class="ai-section-title">
+        <i class="fas fa-bell text-warning"></i> Reminders
+    </h4>
+
+    {% if upcoming_reminders %}
+    <div class="reminders-container">
+        {% for reminder in upcoming_reminders %}
+        <div class="alert alert-{% if reminder.is_completed %}success{% else %}info{% endif %} alert-dismissible fade show mb-3 shadow-sm"
+             role="alert"
+             style="border-left: 5px solid; border-radius: 8px;">
+
+
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <strong class="me-2">{{ reminder.task.title }}</strong>
+
+                    {% if reminder.was_just_sent %}
+                    <span class="badge bg-success ms-2">just sent</span>
+                    {% endif %}
+
+                    <div class="text-muted small mt-1">
+                        {{ reminder.reminder_time|date:"d M Y – H:i" }} PKT
+                    </div>
+                </div>
+
+                <div class="ms-3 text-end">
+                    {% if reminder.is_completed %}
+                    <span class="badge bg-success">Sent / Completed</span>
+                    {% else %}
+                    <span class="badge bg-warning text-dark">Upcoming</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Optional: small note or task description -->
+            {% if reminder.task.description %}
+            <div class="small text-muted mt-2">
+                {{ reminder.task.description|truncatewords:15 }}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-light text-center py-4 shadow-sm">
+        No upcoming or recently sent reminders at the moment.
+    </div>
+    {% endif %}
+</div>
+
+        <div class="col-lg-4 mb-4">
+            <h4 class="ai-section-title"><i class="fas fa-brain text-info"></i> Smart Suggestions</h4>
+            {% if recommended_tasks %}
+            <div class="list-group">
+                {% for task in recommended_tasks %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{{ task.title }}</span>
+                    <span class="badge badge-info">{{ task.get_priority_display }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-4 bg-white rounded shadow-sm">
+                <p class="text-muted mb-0 small">Add more tasks for better AI suggestions.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4 mb-4">
+            <h4 class="ai-section-title"><i class="fas fa-redo text-success"></i> Patterns Detected</h4>
+            {% if recurring_suggestions %}
+            <div class="list-group">
+                {% for task in recurring_suggestions %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{{ task.title }}</span>
+                    <span class="badge badge-success badge-pill">{{ task.recurrence_pattern|capfirst }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-4 bg-white rounded shadow-sm">
+                <p class="text-muted mb-0 small">No recurring patterns found yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}My Reminders | PlanIt AI{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="font-weight-bold">My Reminders</h2>
+                <a href="{% url 'create_reminder' %}" class="btn btn-info">New Reminder</a>
+            </div>
+
+            {% if reminders %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Task</th>
+                            <th>Time</th>
+                            <th>Completed</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reminder in reminders %}
+                        <tr>
+                            <td>{{ reminder.task.title }}</td>
+                            <td>{{ reminder.reminder_time|date:"M d, Y H:i" }}</td>
+                            <td>
+                                {% if reminder.is_completed %}
+                                    <span class="badge badge-success">Yes</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">No</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'edit_reminder' reminder.reminder_id %}" class="btn btn-sm btn-primary">Edit</a>
+                                <a href="{% url 'delete_reminder' reminder.reminder_id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this reminder?');">Delete</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-bell fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">No Reminders Found</h5>
+                    <p class="small text-secondary">Create a reminder to get notifications for your tasks.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .badge-success { background-color: #16a34a; color: white; }
+    .badge-secondary { background-color: #6b7280; color: white; }
+</style>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}{% if form.instance.pk %}Edit Task{% else %}New Task{% endif %} | PlanIt AI{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm overflow-hidden" style="border-radius: 20px;">
+                <div class="row no-gutters">
+
+                    <div class="col-md-4 bg-primary text-white p-5 d-flex flex-column justify-content-center text-center">
+                        <div class="mb-4">
+                            <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center shadow-lg" style="width: 140px; height: 140px;">
+                                {% if form.instance.pk %}
+                                    <i class="fas fa-edit fa-4x text-primary"></i>
+                                {% else %}
+                                    <i class="fas fa-plus-circle fa-4x text-primary"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <h4 class="font-weight-bold">
+                            {% if form.instance.pk %}Refine Goal{% else %}New Goal{% endif %}
+                        </h4>
+                        <p class="small opacity-75">
+                            {% if form.instance.pk %}Update your progress.{% else %}Start something productive.{% endif %}
+                        </p>
+                    </div>
+
+                    <div class="col-md-8 bg-white p-5">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h3 class="font-weight-bold mb-0">
+                                {% if form.instance.pk %}Edit Task{% else %}Create Task{% endif %}
+                            </h3>
+                            <a href="{% url 'dashboard' %}" class="btn btn-sm btn-light border text-muted">
+                                Discard
+                            </a>
+                        </div>
+
+                        <form method="post">
+                            {% csrf_token %}
+
+                            <h6 class="text-uppercase text-muted small font-weight-bold mb-3 border-bottom pb-2">
+                                Task Essentials
+                            </h6>
+
+                            <div class="form-group mb-3">
+                                <label>Task Title</label>
+                                {{ form.title }}
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label>Description</label>
+                                {{ form.description }}
+                            </div>
+
+                            <div class="form-group mb-3">
+                                <label>Category</label>
+                                {{ form.category }}
+                            </div>
+
+                            <h6 class="text-uppercase text-muted small font-weight-bold mb-3 border-bottom pb-2">
+                                Scheduling & Smart Options
+                            </h6>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label>Due Date</label>
+                                    {{ form.due_date }}
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label>Duration (Minutes)</label>
+                                    {{ form.duration_minutes }}
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label>Priority</label>
+                                    {{ form.priority }}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label>Recurrence</label>
+                                    {{ form.recurrence_pattern }}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label>Status</label>
+                                    {{ form.status }}
+                                </div>
+
+                                <div class="col-md-12 mb-3 form-check">
+                                    {{ form.bookmarked }}
+                                    <label class="form-check-label">Bookmark this task</label>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 pt-3 border-top">
+                                <button type="submit" class="btn btn-info btn-lg btn-block shadow-sm font-weight-bold">
+                                    {% if form.instance.pk %}Update Task{% else %}Create Task{% endif %}
+                                </button>
+                            </div>
+
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

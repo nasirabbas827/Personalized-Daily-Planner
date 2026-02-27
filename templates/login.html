@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Login | App Analysis Portal{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-7">
+            <div class="card border-0 shadow-lg overflow-hidden" style="border-radius: 1rem;">
+                <div class="card-header bg-primary text-white text-center py-4 border-0">
+                    <div class="mb-2">
+                        <i class="fas fa-user-lock fa-3x"></i>
+                    </div>
+                    <h3 class="font-weight-bold mb-0">Portal Login</h3>
+                    <p class="small mb-0 opacity-75">Secure access to AI Analysis Tools</p>
+                </div>
+
+                <div class="card-body p-5 bg-white">
+                    <form method="post" class="login-form">
+                        {% csrf_token %}
+                        
+                        {# Iterating through fields for custom Bootstrap styling #}
+                        {% for field in form %}
+                            <div class="form-group mb-4">
+                                <label class="small font-weight-bold text-uppercase tracking-wider text-muted" for="{{ field.id_for_label }}">
+                                    {{ field.label }}
+                                </label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text bg-light border-right-0">
+                                            {% if "user" in field.label|lower %}
+                                                <i class="fas fa-user text-primary"></i>
+                                            {% elif "pass" in field.label|lower %}
+                                                <i class="fas fa-key text-primary"></i>
+                                            {% else %}
+                                                <i class="fas fa-id-card text-primary"></i>
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    {{ field }}
+                                </div>
+                                {% for error in field.errors %}
+                                    <div class="text-danger small mt-1"><i class="fas fa-exclamation-triangle mr-1"></i>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+
+                        <div class="form-check mb-4">
+                            <input type="checkbox" class="form-check-input" id="rememberMe">
+                            <label class="form-check-label small text-muted" for="rememberMe">Remember this device</label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block btn-lg shadow-sm font-weight-bold py-3">
+                            <i class="fas fa-sign-in-alt mr-2"></i>Authenticate
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <a href="#" class="small text-muted">Forgot password?</a>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light border-0 py-4 text-center">
+                    <p class="mb-0 text-muted">
+                        New to App Analysis? 
+                        <a href="{% url 'register' %}" class="text-primary font-weight-bold">Create an account</a>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <small class="text-muted">
+                    <i class="fas fa-circle text-success mr-1" style="font-size: 8px;"></i> 
+                    NLP Engine v1.02 Status: <span class="font-weight-bold text-dark">Optimal</span>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styling for Django Form Inputs */
+    .login-form input {
+        display: block;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        color: #1e293b;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-left: none; /* Merges with icon */
+        border-radius: 0 0.5rem 0.5rem 0;
+        transition: all 0.2s ease;
+    }
+
+    .login-form input:focus {
+        background-color: #fff;
+        border-color: #2563eb;
+        outline: 0;
+        box-shadow: none;
+    }
+
+    .input-group-text {
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem 0 0 0.5rem;
+    }
+
+    .tracking-wider { letter-spacing: 0.05rem; }
+    .opacity-75 { opacity: 0.75; }
+</style>
+{% endblock %}

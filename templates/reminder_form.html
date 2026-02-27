@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}{% if form.instance.pk %}Edit Reminder{% else %}New Reminder{% endif %} | PlanIt AI{% endblock %}
+
+{% block content %}
+<style>
+    .reminder-card {
+        border-radius: 20px;
+        background: #ffffff;
+        border: none;
+        overflow: hidden;
+    }
+    .form-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #1e293b 100%);
+        padding: 2rem;
+        color: white;
+        text-align: center;
+    }
+    .form-container {
+        padding: 2.5rem;
+    }
+    .input-wrapper {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    .input-wrapper label {
+        color: #64748b;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    /* Style the Django form widgets */
+    input[type="text"], 
+    input[type="datetime-local"], 
+    select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+        background-color: #f8fafc;
+    }
+    input:focus, select:focus {
+        outline: none;
+        border-color: var(--accent-color);
+        background-color: #fff;
+        box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+    }
+    .btn-submit {
+        background-color: var(--accent-color);
+        color: var(--primary-color);
+        font-weight: 600;
+        border: none;
+        padding: 0.8rem;
+        border-radius: 10px;
+        transition: 0.3s;
+    }
+    .btn-submit:hover {
+        background-color: #0ea5e9;
+        transform: translateY(-2px);
+        color: white;
+    }
+    .custom-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        background: #f1f5f9;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+</style>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card reminder-card shadow-lg">
+                <div class="form-header">
+                    <div class="mb-3">
+                        <i class="fas fa-bell fa-3x text-info"></i>
+                    </div>
+                    <h3 class="font-weight-bold mb-0">
+                        {% if form.instance.pk %}Update Notification{% else %}Set a Reminder{% endif %}
+                    </h3>
+                    <p class="small opacity-75 mb-0">Never miss a deadline with smart alerts</p>
+                </div>
+
+                <div class="form-container">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="input-wrapper">
+                            <label class="small"><i class="fas fa-clipboard-list mr-2"></i>Select Task</label>
+                            {{ form.task }}
+                            {% if form.task.errors %}
+                                <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle mr-1"></i>{{ form.task.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="input-wrapper">
+                            <label class="small"><i class="fas fa-clock mr-2"></i>Alert Time</label>
+                            {{ form.reminder_time }}
+                            {% if form.reminder_time.errors %}
+                                <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle mr-1"></i>{{ form.reminder_time.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="input-wrapper">
+                            {{ form.reminder_type }}
+                            {% if form.reminder_type.errors %}
+                                <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle mr-1"></i>{{ form.reminder_type.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="custom-checkbox small mb-0">
+                                {{ form.is_completed }}
+                                <span><i class="fas fa-paper-plane mr-1"></i> Mark as Completed</span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-submit btn-block shadow-sm">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            {% if form.instance.pk %}Save Changes{% else %}Enable Reminder{% endif %}
+                        </button>
+                        
+                        <div class="text-center mt-3">
+                            <a href="{% url 'reminder_list' %}" class="text-muted small text-decoration-none">
+                                <i class="fas fa-arrow-left mr-1"></i> Back to reminders
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

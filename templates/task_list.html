@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block title %}My Tasks | PlanIt AI{% endblock %}
+
+{% block content %}
+<style>
+    .task-card {
+        border-radius: 15px;
+        overflow: hidden;
+        border: none;
+    }
+    .filter-section {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+    .priority-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+    }
+    .priority-high { background-color: var(--high-priority); }
+    .priority-medium { background-color: #f59e0b; }
+    .priority-low { background-color: var(--low-priority); }
+    
+    .table thead th {
+        border-top: none;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+        color: #ffffff;
+        background-color: #000000;
+    }
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        line-height: 32px;
+        border-radius: 8px;
+        transition: 0.2s;
+    }
+    .bookmark-star {
+        color: #cbd5e1;
+        transition: 0.3s;
+    }
+    .bookmark-active {
+        color: #f59e0b;
+    }
+</style>
+
+<div class="container my-5">
+
+    <div class="row align-items-center mb-4">
+        <div class="col-md-6">
+            <h2 class="font-weight-bold mb-0" style="color: var(--primary-color);">Task Inventory</h2>
+            <p class="text-muted">Manage and track all your scheduled activities</p>
+        </div>
+        <div class="col-md-6 text-md-right">
+            <a href="{% url 'create_task' %}" class="btn btn-info shadow-sm px-4" style="border-radius: 20px;">
+                <i class="fas fa-plus mr-2"></i>New Task
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 text-center p-3 mb-3">
+                <small class="text-muted text-uppercase font-weight-bold">Total</small>
+                <h4 class="mb-0">{{ total_tasks }}</h4>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 text-center p-3 mb-3 border-left border-success" style="border-left-width: 4px !important;">
+                <small class="text-muted text-uppercase font-weight-bold">Completed</small>
+                <h4 class="mb-0 text-success">{{ completed_tasks }}</h4>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 text-center p-3 mb-3 border-left border-warning" style="border-left-width: 4px !important;">
+                <small class="text-muted text-uppercase font-weight-bold">Pending</small>
+                <h4 class="mb-0 text-warning">{{ pending_tasks }}</h4>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 text-center p-3 mb-3 border-left border-danger" style="border-left-width: 4px !important;">
+                <small class="text-muted text-uppercase font-weight-bold">Overdue</small>
+                <h4 class="mb-0 text-danger">{{ overdue_tasks }}</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-section shadow-sm">
+        <form method="get" class="form-row align-items-end">
+            <div class="col-lg-2 col-md-4 mb-2">
+                <label class="small font-weight-bold">Priority</label>
+                <select name="priority" class="form-control form-control-sm border-0 bg-light">
+                    <option value="">All Priorities</option>
+                    <option value="1" {% if request.GET.priority == '1' %}selected{% endif %}>🔴 High</option>
+                    <option value="2" {% if request.GET.priority == '2' %}selected{% endif %}>🟡 Medium</option>
+                    <option value="3" {% if request.GET.priority == '3' %}selected{% endif %}>🟢 Low</option>
+                </select>
+            </div>
+
+            <div class="col-lg-2 col-md-4 mb-2">
+                <label class="small font-weight-bold">Status</label>
+                <select name="status" class="form-control form-control-sm border-0 bg-light">
+                    <option value="">All Status</option>
+                    <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+                    <option value="overdue" {% if request.GET.status == 'overdue' %}selected{% endif %}>Overdue</option>
+                </select>
+            </div>
+
+            <div class="col-lg-2 col-md-4 mb-2">
+                <label class="small font-weight-bold">Category</label>
+                <select name="category" class="form-control form-control-sm border-0 bg-light">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:"s" %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-2">
+                <label class="small font-weight-bold">Search Keywords</label>
+                <div class="input-group input-group-sm">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text bg-light border-0"><i class="fas fa-search text-muted"></i></span>
+                    </div>
+                    <input type="text" name="search" placeholder="Task name..." value="{{ request.GET.search }}" class="form-control border-0 bg-light">
+                </div>
+            </div>
+
+            <div class="col-lg-1 col-md-3 mb-2">
+                <label class="small font-weight-bold">Saved</label>
+                <select name="bookmarked" class="form-control form-control-sm border-0 bg-light">
+                    <option value="">All</option>
+                    <option value="1" {% if request.GET.bookmarked == '1' %}selected{% endif %}>⭐ Favorites</option>
+                </select>
+            </div>
+
+            <div class="col-lg-2 col-md-3 mb-2">
+                <button type="submit" class="btn btn-primary btn-sm btn-block shadow-sm">
+                    Filter Results
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card task-card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th class="pl-4">Task Details</th>
+                        <th>Category</th>
+                        <th>Priority</th>
+                        <th>Timeline</th>
+                        <th>Status</th>
+                        <th>Details</th>
+                        <th class="text-right pr-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for task in tasks %}
+                    <tr>
+                        <td class="pl-4">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-star bookmark-star mr-3 {% if task.bookmarked %}bookmark-active{% endif %}"></i>
+                                <div>
+                                    <span class="font-weight-bold d-block">{{ task.title }}</span>
+                                    {% if task.recurrence_pattern != 'none' %}
+                                        <small class="text-info"><i class="fas fa-sync-alt fa-xs mr-1"></i> {{ task.get_recurrence_pattern_display }}</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+
+                        <td><span class="badge badge-light px-3 py-2 text-muted">{{ task.category.name|default:"General" }}</span></td>
+
+                        <td>
+                            {% if task.priority == 1 %}
+                                <span class="priority-indicator priority-high"></span> High
+                            {% elif task.priority == 2 %}
+                                <span class="priority-indicator priority-medium"></span> Medium
+                            {% else %}
+                                <span class="priority-indicator priority-low"></span> Low
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <div class="small">
+                                <i class="far fa-calendar-alt mr-1 text-muted"></i> {{ task.due_date|date:"M d, Y" }}<br>
+                                <i class="far fa-clock mr-1 text-muted"></i> {{ task.due_date|date:"H:i" }}
+                            </div>
+                        </td>
+
+                        <td>
+                            {% if task.status == "completed" %}
+                                <span class="badge badge-pill badge-success-light" style="background: #dcfce7; color: #166534;">Completed</span>
+                            {% elif task.status == "overdue" %}
+                                <span class="badge badge-pill badge-danger-light" style="background: #fee2e2; color: #991b1b;">Overdue</span>
+                            {% else %}
+                                <span class="badge badge-pill badge-warning-light" style="background: #fef3c7; color: #92400e;">Pending</span>
+                            {% endif %}
+                        </td>
+
+                        <td><small class="text-muted"><i class="fas fa-hourglass-half mr-1"></i>{{ task.duration_minutes }}m</small></td>
+
+                        <td class="text-right pr-4">
+                            <div class="btn-group">
+                                <a href="{% url 'complete_task' task.task_id %}" class="btn btn-light btn-action text-success mr-1" title="Mark Complete">
+                                    <i class="fas fa-check"></i>
+                                </a>
+                                <a href="{% url 'edit_task' task.task_id %}" class="btn btn-light btn-action text-primary mr-1" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'delete_task' task.task_id %}" class="btn btn-light btn-action text-danger" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="fas fa-clipboard-list fa-3x mb-3 opacity-25"></i>
+                                <p>No tasks found matching your criteria.</p>
+                                <a href="{% url 'create_task' %}" class="btn btn-outline-info btn-sm">Add Your First Task</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
